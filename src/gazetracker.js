@@ -18,7 +18,8 @@ class GazeObject{
 
 export default class GazeTracker {
 	constructor(){
-		this.gazeObjects = new Map()
+		this.gazeObjects = new Map();
+		this.trackerData = new Map();
 	}
 
 	register(element){
@@ -35,5 +36,15 @@ export default class GazeTracker {
 		gazeEvent.y = y;
 
 		return gazeEvent;
+	}
+
+	/* check if gaze falls on any registered objects */
+	checkGaze(){
+		/* for now iterate over every member and check bounding boxes, later should
+		 * use some form of space partitioning
+		 */
+		for(var entry of this.gazeObjects){
+			
+		}
 	}
 }
