@@ -6,15 +6,17 @@ const NO_OWNER = -1;
 /* ticks before and after an interaction */
 const MIN_INTER_TICKS = 400;
 
+const tickEnum = Object.freeze({
+	EMPTY:0,
+	NEUTRAL:1,
+	FULL:2
+});
+
 class GazeObject{
-	const tickEnum = Object.freeze({
-		EMPTY:0,
-		NEUTRAL:1,
-		FULL:2
-	});
+
 
 	constructor(parent,element){
-		this.onCallbacks = new Map();
+		this.listeners = new Map();
 		this.parent = parent;
 		this.element = element;
 		this.owner = NO_OWNER;
@@ -25,12 +27,19 @@ class GazeObject{
 		this.inter_ticks = new Map();
 	}
 
-	/* register a function to be called whenever the specified event in eventString happens */
+	/* register a function to be called whenever the specified event in eventString happens
+	 * Valid eventStrings (all lowercase):
+	 *	"enter"
+	 *	"exit"
+	 *	"intrude"
+	 * These callbacks take the form of function(gazeEvent) where gazeEvent is
+	 * an object containing at least id, x, and y position of the tracker.
+	 */
 	on(eventString,callback,delay){
 		callback_data = new Object();
 		callback_data.func = callback;
 		callback_data.delay = delay != undefined ? delay : MIN_INTER_TICKS;
-		this.onCallbacks.set(eventString,callback_data);
+		this.listeners.set(eventString,callback_data);
 		return this;
 	}
 
@@ -77,7 +86,7 @@ class GazeObject{
 	 * value of true is returned if lock/release is successful
 	 * false otherwise
 	 */
-	Lock(tracker){
+	lock(tracker){
 		if(this.owner == NO_OWNER){
 			this.owner = tracker;
 			return true;
@@ -85,7 +94,7 @@ class GazeObject{
 		return false;
 	}
 
-	Release(tracker){
+	release(tracker){
 		if(this.owner == tracker){
 			this.owner = NO_OWNER;
 			return true;
@@ -118,11 +127,43 @@ export default class GazeTracker {
 
 	/* check if gaze falls on any registered objects */
 	checkGaze(){
-		/* for now iterate over every member and check bounding boxes, later should
-		 * use some form of space partitioning
+		/* TODO: for now iterate over every member and check bounding boxes, later should
+		 * use some form of space partitioning to speed this up.
+		 * Firstly check if gaze falls into an objects bounding box, then check if
+		 * a gaze event should occur. If one does, we call the appropriate function
+		 * for that event.
 		 */
-		for(var entry of this.gazeObjects){
+		for(var tracker of this.trackerData){
+			var lastTime = tracker.lastTime;
+			if(lastTime == undefined){
+				lastTime = new Date().getTime();
+			}
+			var elapsedTime = newDate().getTime();
+			tracker.lastTime = elapsedTime;
+			elapsedTime = elapsedTime - lastTime;
 
+			for(var gazeObject of this.gazeObjects){
+				var bbox = entry.element.getBoundingClientRect();
+				if(point_in_bbox(tracker.x,tracker.y,bbox)){
+					if(gazeObject.tickInteraction(tracker.id,true,elapsedTime) == tickEnum.FULL){
+						if(gazeObject.lock(tracker.id)){
+							gazeObject.listeners.get("enter")(tracker);
+						}
+					}
+				}else{
+					if(gazeObject.tickInteraction(tracker.id,false,elapsedTime) == tickEnum.EMPTY){
+						if(gazeObject.release(tracker.id)){
+							gazeObject.listeners.get("exit")(tracker);
+						}
+					}
+				}
+			}
 		}
 	}
+}
+
+/* check if a point is within a bounding box */
+function point_in_bbox(px,py,bbox){
+	return px > bbox.left && px < bbox.right &&
+		py > bbox.top && py < bbox.bottom;
 }
