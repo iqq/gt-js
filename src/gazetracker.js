@@ -48,10 +48,10 @@ class GazeObject{
 	 *	"exit"
 	 *	"intrude"
 	 * These callbacks take the form of function(gazeEvent) where gazeEvent is
-	 * an object containing at least id, x, and y position of the tracker.
+	 * an object containing at least id, x, and y position of the tracker
 	 */
 	on(eventString,callback,delay){
-		callback_data = new Object();
+		var callback_data = new Object();
 		callback_data.func = callback;
 		callback_data.delay = delay != undefined ? delay : MIN_INTER_TICKS;
 		this.listeners.set(eventString,callback_data);
@@ -125,7 +125,7 @@ export default class GazeTracker {
 	}
 
 	register(element){
-		gazeObject = new GazeObject(this,element);
+		var gazeObject = new GazeObject(this,element);
 		this.gazeObjects.set(element,gazeObject);
 
 		return gazeObject;
