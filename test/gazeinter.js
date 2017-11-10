@@ -5,17 +5,16 @@ var second = document.getElementById("second");
 gazeTracker.register(first)
 	.on("enter",function(gazeEvent){
 		first.style = "color:blue:";
-		console.log(gazeEvent + " " + this);
+		console.log(gazeEvent);
 	})
 	.on("exit",function(gazeEvent){
 		first.style = "color:black";
-		console.log(gazeEvent + " " + this);
+		console.log(gazeEvent);
 	});
 
 /* create a driver to query tracker information
  * use the mouse data in this test
  */
 var driver = new gt.MouseDriver(0);
-console.log(gazeTracker)
 driver.onUpdate(gazeTracker.updateGaze);
 driver.setGazeTracker(gazeTracker);

@@ -68,24 +68,24 @@ class GazeObject{
 	tickInteraction(tracker,on_element,delta_ticks){
 		/* setup inter_ticks for tracker if it does not exist */
 		if(this.inter_ticks.get(tracker) == undefined){
-			inter_ticks.set(tracker,0);
+			this.inter_ticks.set(tracker,0);
 		}
-		var prev_ticks = inter_ticks.get(tracker);
+		var prev_ticks = this.inter_ticks.get(tracker);
 		if(this.owner == tracker || this.owner == NO_OWNER){
 			if(on_element){
 				if(prev_ticks < MIN_INTER_TICKS){
-					inter_ticks.set(tracker,Math.min(prev_ticks+delta_ticks,MIN_INTER_TICKS));
+					this.inter_ticks.set(tracker,Math.min(prev_ticks+delta_ticks,MIN_INTER_TICKS));
 				}
 			}else{
 				if(prev_ticks > 0){
-					inter_ticks.set(tracker,Math.max(prev_ticks-delta_ticks,0));
+					this.inter_ticks.set(tracker,Math.max(prev_ticks-delta_ticks,0));
 				}
 			}
 		}else{
-			inter_ticks.set(tracker,0);
+			this.inter_ticks.set(tracker,0);
 		}
 
-		prev_ticks = inter_ticks.get(tracker);
+		prev_ticks = this.inter_ticks.get(tracker);
 		if(prev_ticks == MIN_INTER_TICKS){
 			return tickEnum.FULL;
 		}else if(prev_ticks == 0){
@@ -141,12 +141,12 @@ export default class GazeTracker {
 	updateGaze(gazeEvent,gazeTracke){
 		var tracker = gazeTracker.trackerData.get(gazeEvent.id);
 		if (tracker == undefined){
-			tracker = createGazeEvent(gazeEvent.id,0,0);
+			tracker = gazeTracker.createGazeEvent(gazeEvent.id,0,0);
 		}
 		tracker.x = gazeEvent.x;
 		tracker.y = gazeEvent.y;
 		gazeTracker.trackerData.set(gazeEvent.id,tracker);
-		checkGaze();
+		gazeTracker.checkGaze();
 	}
 
 	/* check if gaze falls on any registered objects */
@@ -157,7 +157,8 @@ export default class GazeTracker {
 		 * a gaze event should occur. If one does, we call the appropriate function
 		 * for that event.
 		 */
-		for(var tracker of this.trackerData){
+		for(var trackerPair of this.trackerData){
+			var tracker = trackerPair[1];
 			var lastTime = tracker.lastTime;
 			if(lastTime == undefined){
 				lastTime = new Date().getTime();
@@ -166,18 +167,19 @@ export default class GazeTracker {
 			tracker.lastTime = elapsedTime;
 			elapsedTime = elapsedTime - lastTime;
 
-			for(var gazeObject of this.gazeObjects){
-				var bbox = entry.element.getBoundingClientRect();
+			for(var entry of this.gazeObjects){
+				var gazeObject = entry[1];
+				var bbox = gazeObject.element.getBoundingClientRect();
 				if(point_in_bbox(tracker.x,tracker.y,bbox)){
 					if(gazeObject.tickInteraction(tracker.id,true,elapsedTime) == tickEnum.FULL){
 						if(gazeObject.lock(tracker.id)){
-							gazeObject.listeners.get("enter")(tracker);
+							gazeObject.listeners.get("enter").func(tracker);
 						}
 					}
 				}else{
 					if(gazeObject.tickInteraction(tracker.id,false,elapsedTime) == tickEnum.EMPTY){
 						if(gazeObject.release(tracker.id)){
-							gazeObject.listeners.get("exit")(tracker);
+							gazeObject.listeners.get("exit").func(tracker);
 						}
 					}
 				}
