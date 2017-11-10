@@ -11,3 +11,11 @@ gazeTracker.register(first)
 		first.style = "color:black";
 		console.log(gazeEvent + " " + this);
 	});
+
+/* create a driver to query tracker information
+ * use the mouse data in this test
+ */
+var driver = new gt.MouseDriver(0);
+console.log(gazeTracker)
+driver.onUpdate(gazeTracker.updateGaze);
+driver.setGazeTracker(gazeTracker);

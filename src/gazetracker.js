@@ -28,8 +28,6 @@ const tickEnum = Object.freeze({
 });
 
 class GazeObject{
-
-
 	constructor(parent,element){
 		this.listeners = new Map();
 		this.parent = parent;
@@ -138,6 +136,17 @@ export default class GazeTracker {
 		gazeEvent.y = y;
 
 		return gazeEvent;
+	}
+
+	updateGaze(gazeEvent,gazeTracke){
+		var tracker = gazeTracker.trackerData.get(gazeEvent.id);
+		if (tracker == undefined){
+			tracker = createGazeEvent(gazeEvent.id,0,0);
+		}
+		tracker.x = gazeEvent.x;
+		tracker.y = gazeEvent.y;
+		gazeTracker.trackerData.set(gazeEvent.id,tracker);
+		checkGaze();
 	}
 
 	/* check if gaze falls on any registered objects */

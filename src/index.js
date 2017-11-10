@@ -1,2 +1,3 @@
 import GazeTracker from './gazetracker.js';
-export {GazeTracker};
+import MouseDriver from './mousedriver.js';
+export {GazeTracker,MouseDriver};
