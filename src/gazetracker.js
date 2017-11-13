@@ -130,8 +130,8 @@ export default class GazeTracker {
 	}
 
 	addDriver(driver){
-		driver.gazeTracker = this;
-		driver.onUpdate(this.checkGaze());
+		driver.setGazeTracker(this);
+		driver.onUpdate(this.updateGaze);
 	}
 
 	createGazeEvent(id, x, y){
@@ -141,6 +141,17 @@ export default class GazeTracker {
 		gazeEvent.y = y;
 
 		return gazeEvent;
+	}
+
+	updateGaze(gazeEvent){
+		var tracker = this.trackerData.get(gazeEvent.id);
+		if(tracker == undefined){
+			tracker = this.createGazeEvent(gazeEvent.id,0,0);
+		}
+		tracker.x = gazeEvent.x;
+		tracker.y = gazeEvent.y;
+		this.trackerData.set(gazeEvent.id,tracker);
+		this.checkGaze();
 	}
 
 	/* check if gaze falls on any registered objects */

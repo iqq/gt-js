@@ -15,5 +15,8 @@ gazeTracker.register(first)
 /* create a driver to query tracker information
  * use the mouse data in this test
  */
-var driver = new gt.MouseDriver(0);
+//var driver = new gt.MouseDriver(0);
+//gazeTracker.addDriver(driver);
+
+var driver = new gt.SocketIODriver();
 gazeTracker.addDriver(driver);
