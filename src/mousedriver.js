@@ -9,11 +9,22 @@
  */
 export default class MouseDriver{
   constructor(id){
-    this.updateFunc = undefined;
+    this.updateFunc = this.updateGaze;
     this.mousePosition = new Object();
     this.id = id;
     this.gazeTracker = undefined;
   }
+
+  updateGaze(gazeEvent,gazeTracker){
+		var tracker = gazeTracker.trackerData.get(gazeEvent.id);
+		if (tracker == undefined){
+			tracker = gazeTracker.createGazeEvent(gazeEvent.id,0,0);
+		}
+		tracker.x = gazeEvent.x;
+		tracker.y = gazeEvent.y;
+		gazeTracker.trackerData.set(gazeEvent.id,tracker);
+		gazeTracker.checkGaze();
+	}
 
   /* callback has the form of func(object) where object
    * has at least 3 fields id, x, and y
@@ -36,7 +47,7 @@ export default class MouseDriver{
         gazeEvent.id = parent.id;
         gazeEvent.x = pos.x;
         gazeEvent.y = pos.y;
-        parent.updateFunc(gazeEvent,parent.gazeTracker);
+        parent.updateGaze(gazeEvent,parent.gazeTracker);
       }
     },33);
   }

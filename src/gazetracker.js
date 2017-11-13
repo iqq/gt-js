@@ -129,6 +129,11 @@ export default class GazeTracker {
 		return gazeObject;
 	}
 
+	addDriver(driver){
+		driver.gazeTracker = this;
+		driver.onUpdate(this.checkGaze());
+	}
+
 	createGazeEvent(id, x, y){
 		var gazeEvent = new Object();
 		gazeEvent.id = id;
@@ -136,17 +141,6 @@ export default class GazeTracker {
 		gazeEvent.y = y;
 
 		return gazeEvent;
-	}
-
-	updateGaze(gazeEvent,gazeTracke){
-		var tracker = gazeTracker.trackerData.get(gazeEvent.id);
-		if (tracker == undefined){
-			tracker = gazeTracker.createGazeEvent(gazeEvent.id,0,0);
-		}
-		tracker.x = gazeEvent.x;
-		tracker.y = gazeEvent.y;
-		gazeTracker.trackerData.set(gazeEvent.id,tracker);
-		gazeTracker.checkGaze();
 	}
 
 	/* check if gaze falls on any registered objects */

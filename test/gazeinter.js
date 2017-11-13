@@ -16,5 +16,4 @@ gazeTracker.register(first)
  * use the mouse data in this test
  */
 var driver = new gt.MouseDriver(0);
-driver.onUpdate(gazeTracker.updateGaze);
-driver.setGazeTracker(gazeTracker);
+gazeTracker.addDriver(driver);
