@@ -117,9 +117,10 @@ class GazeObject{
 }
 
 export default class GazeTracker {
-	constructor(){
+	constructor(debug){
 		this.gazeObjects = new Map();
 		this.trackerData = new Map();
+		this.debug = debug;
 	}
 
 	register(element){
@@ -143,6 +144,35 @@ export default class GazeTracker {
 		return gazeEvent;
 	}
 
+	retrieveEyeDiv(tracker){
+		var eyediv = document.getElementById("eyediv"+tracker);
+
+		/* first time user is looking
+		 * make them a div
+		 */
+		if(eyediv == null){
+			eyediv = document.createElement("div");
+			eyediv.id = "eyediv" + tracker;
+			eyediv.classList.add("eye");
+
+			eyediv.style = "position: absolute; \
+				text-align: center; \
+				width: 20px; \
+				height: 20px; \
+				padding: 2px; \
+				font: 12px sans-serif; \
+				opacity: 0.5; \
+				border-radius: 20px; \
+				pointer-events: none; \
+				background: blue; \
+				z-index: 1;"
+
+			document.body.appendChild(eyediv);
+		}
+
+		return eyediv;
+	}
+
 	updateGaze(gazeEvent){
 		var tracker = this.trackerData.get(gazeEvent.id);
 		if(tracker == undefined){
@@ -151,6 +181,14 @@ export default class GazeTracker {
 		tracker.x = gazeEvent.x;
 		tracker.y = gazeEvent.y;
 		this.trackerData.set(gazeEvent.id,tracker);
+
+		if(this.debug == true){
+			var eyediv = this.retrieveEyeDiv(tracker);
+			const eoff = 10;
+			eyediv.style.left = (tracker.x-eoff) + "px";
+			eyediv.style.top = (tracker.y-eoff) + "px";
+		}
+
 		this.checkGaze();
 	}
 
