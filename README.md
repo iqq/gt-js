@@ -36,4 +36,24 @@ Next we define at least one element so that we can register it with our library,
 </body>
 ```
 
-Now we can move over to the javascript side where we define the behaviour for gaze events. The example code for this is inside `gazeinter.js`.
+Now we can move over to the javascript side where we define the behaviour for gaze events. The example code for this is inside `gazeinter.js`. Here we create a `GazeTracker` object. This object manages registered html elements and generates gaze events on the objects.
+```Javascript
+var gazeTracker = new gt.GazeTracker();
+var image = document.getElementById("image");
+
+gazeTracker.register(image)
+	.on("enter",function(gazeEvent){
+		image.src = "tile1.jpg";
+	})
+	.on("exit",function(gazeEvent){
+		image.src = "tile0.jpg";
+	});
+```
+Here we get the html element we want (image) and register it with the gazeTracker object. The return value of the register method is a GazeObject - an object which represents a gaze aware element in the document. We then define behaviour for the GazeObject with the .on method. The first argument is the name of the event and the second argument is a callback for when that event occurs. In this example we just use an anonymous function. The return value of the .on method is the same GazeObject, so we can chain these method calls to define multiple event handlers. In our example code, we are simply changing the image when the gaze `enter`s the image, and we change back when the gaze `exit`s. At the moment `enter` and `exit` are the only valid events.  
+
+Finally we require a driver for our library - the driver is the source of gaze data which can differ between different trackers and systems. The library comes with two drivers, one which receives data from a socketIO source and another which uses the mouse pointer to spoof gaze data. Depending on how a system is designed it is likely that the client will have to define their own driver. Information on the API for a driver will be documented elsewhere, in our example we will go forward with using the included socketIO driver.
+```Javascript
+var driver = new gt.SocketIODriver();
+gazeTracker.addDriver(driver);
+```
+This code intializes a new driver and adds it to the gazeTracker object. For the socketIO driver, it updates the gaze location when new tracker data comes in through a socketIO connection. See the implementation in `src/socketio_driver.js` for more details on this and an example of how one would implement their own driver.
