@@ -18,7 +18,7 @@ export default class SocketIODriver{
         eyey = msg[1] * screen.height,
         tracker = Number(msg[2]);
       var px = eyex - (screen.width - document.documentElement.clientWidth),
-        py = Math.abs(eyey - (screen.height - document.documentElement.clientHeight));
+        py = eyey - (screen.height - document.documentElement.clientHeight);
 
         parent.gazeTracker.updateGaze(parent.gazeTracker.createGazeEvent(tracker,px,py));
     });

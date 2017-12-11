@@ -44,7 +44,7 @@ class GazeObject{
 	 * Valid eventStrings (all lowercase):
 	 *	"enter"
 	 *	"exit"
-	 *	"intrude"
+	 *	"interact"
 	 * These callbacks take the form of function(gazeEvent) where gazeEvent is
 	 * an object containing at least id, x, and y position of the tracker
 	 */
@@ -121,6 +121,7 @@ export default class GazeTracker {
 		this.gazeObjects = new Map();
 		this.trackerData = new Map();
 		this.debug = debug;
+		this.behaviourLock = true; /* flag if tracker exhibits locking behaviour on elements */
 	}
 
 	register(element){
@@ -142,6 +143,10 @@ export default class GazeTracker {
 		gazeEvent.y = y;
 
 		return gazeEvent;
+	}
+
+	setBehaviourLock(lockable){
+		this.behaviourLock = lockable;
 	}
 
 	retrieveEyeDiv(tracker){
@@ -183,7 +188,7 @@ export default class GazeTracker {
 		this.trackerData.set(gazeEvent.id,tracker);
 
 		if(this.debug == true){
-			var eyediv = this.retrieveEyeDiv(tracker);
+			var eyediv = this.retrieveEyeDiv(tracker.id);
 			const eoff = 10;
 			eyediv.style.left = (tracker.x-eoff) + "px";
 			eyediv.style.top = (tracker.y-eoff) + "px";
@@ -213,16 +218,24 @@ export default class GazeTracker {
 			for(var entry of this.gazeObjects){
 				var gazeObject = entry[1];
 				var bbox = gazeObject.element.getBoundingClientRect();
-				if(point_in_bbox(tracker.x,tracker.y,bbox)){
-					if(gazeObject.tickInteraction(tracker.id,true,elapsedTime) == tickEnum.FULL){
-						if(gazeObject.lock(tracker.id)){
-							gazeObject.listeners.get("enter").func(tracker);
+				if(this.behaviourLock){
+					if(point_in_bbox(tracker.x,tracker.y,bbox)){
+						if(gazeObject.tickInteraction(tracker.id,true,elapsedTime) == tickEnum.FULL){
+							if(gazeObject.lock(tracker.id)){
+								gazeObject.listeners.get("enter").func(tracker);
+							}
+						}
+					}else{
+						if(gazeObject.tickInteraction(tracker.id,false,elapsedTime) == tickEnum.EMPTY){
+							if(gazeObject.release(tracker.id)){
+								gazeObject.listeners.get("exit").func(tracker);
+							}
 						}
 					}
 				}else{
-					if(gazeObject.tickInteraction(tracker.id,false,elapsedTime) == tickEnum.EMPTY){
-						if(gazeObject.release(tracker.id)){
-							gazeObject.listeners.get("exit").func(tracker);
+					if(point_in_bbox(tracker.x,tracker.y,bbox)){
+						if(gazeObject.tickInteraction(tracker.id,true,elapsedTime) == tickEnum.FULL){
+							gazeObject.listeners.get("interact").func(tracker);
 						}
 					}
 				}
